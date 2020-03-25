@@ -680,8 +680,10 @@
                             errorPageController.trackEasterEgg();
                         }
                     }
+
+                    // TODO: write if conditional that allows just double jump.
                     //  Play sound effect and jump on starting the game for the first time.
-                    if (!this.tRex.jumping && !this.tRex.ducking) {
+                    if (!this.tRex.doubleJumping && !this.tRex.ducking) {
                         this.playSound(this.soundFx.BUTTON_PRESS);
                         this.tRex.startJump(this.currentSpeed);
                     }
@@ -689,6 +691,7 @@
 
                 if (this.crashed && e.type == Runner.events.TOUCHSTART &&
                     e.currentTarget == this.containerEl) {
+                        console.log(5)
                     this.restart();
                 }
             }
@@ -1507,6 +1510,7 @@
         this.status = Trex.status.WAITING;
 
         this.jumping = false;
+        this.doubleJumping = false;
         this.ducking = false;
         this.jumpVelocity = 0;
         this.reachedMinHeight = false;
@@ -1749,14 +1753,25 @@
          * @param {number} speed
          */
         startJump: function (speed) {
-            if (!this.jumping) {
-                this.update(0, Trex.status.JUMPING);
-                // Tweak the jump velocity based on the speed.
-                this.jumpVelocity = this.config.INIITAL_JUMP_VELOCITY - (speed / 10);
+            // can't do more than a double jump.
+            if (this.doubleJumping) {
+                return;
+            } 
+
+            // first jump.
+            if (! this.jumping) {
                 this.jumping = true;
-                this.reachedMinHeight = false;
-                this.speedDrop = false;
             }
+            // second jump.
+            else {
+                this.doubleJumping = true;
+            }
+
+            this.update(0, Trex.status.JUMPING);
+            // Tweak the jump velocity based on the speed.
+            this.jumpVelocity = this.config.INIITAL_JUMP_VELOCITY - (speed / 10);
+            this.reachedMinHeight = false;
+            this.speedDrop = false;
         },
 
         /**
@@ -1835,6 +1850,7 @@
             this.yPos = this.groundYPos;
             this.jumpVelocity = 0;
             this.jumping = false;
+            this.doubleJumping = false;
             this.ducking = false;
             this.update(0, Trex.status.RUNNING);
             this.midair = false;
